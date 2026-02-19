@@ -1,17 +1,46 @@
 # Base de mod Hytale: sélection de zone + commande `/colonie`
 
-Tu avais raison: pour le template `plugin-template`, il faut une intégration **simple** sans faux `MyModApi`.
+Tu as partagé la bonne approche: on peut partir **sans template** en ajoutant les dépendances Hytale manuellement.
 
-Cette version fournit une feature prête à brancher:
+## Version Java cible
 
-- `ColonyFeature` (assemblage de la feature)
-- `ListenerCentral` (events d'interaction)
-- `BlockClickHandler` (clic gauche/droit -> posA/posB en chunk)
-- `ColonieCommand` (sous-commandes `create`, `info`, `cancel`)
+Le projet est configuré pour **OpenJDK Temurin 25.0.2+10 LTS** :
 
-## Intégration dans ton plugin-template
+- OpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)
+- OpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)
 
-Dans ta classe principale du template, instancie la feature puis enregistre listener + commande avec les APIs du template:
+Ce repo inclut maintenant:
+
+- un squelette de code (`selection`, `handlers`, `listener`, `commands`, `bootstrap`)
+- une base **Gradle Kotlin DSL** (`settings.gradle.kts`, `build.gradle.kts`)
+- une base **Maven** (`pom.xml`)
+- un `manifest.json` à personnaliser
+- un point d'entrée minimal `dev.myserver.Main`
+
+## Dépendance Hytale (Gradle)
+
+Le `build.gradle.kts` contient:
+
+- `mavenCentral()`
+- repo Hytale `https://maven.hytale.com/release`
+- dépendance `implementation("com.hypixel.hytale:Server:+")`
+- toolchain Java 25 + vendor Adoptium + `--release 25`
+
+Tu peux remplacer `+` par une version fixe quand tu veux stabiliser ton build.
+
+## Dépendance Hytale (Maven)
+
+Le `pom.xml` contient:
+
+- repo Hytale `https://maven.hytale.com/release`
+- dépendance `Server` en scope `provided`
+- compilation Java configurée en `release 25`
+
+⚠️ Pense à remplacer `LATEST_VERSION_HERE` avant de build.
+
+## Intégration rapide
+
+Dans ton entrypoint réel (celui du template/projet):
 
 ```java
 private ColonyFeature colonyFeature;
@@ -19,26 +48,21 @@ private ColonyFeature colonyFeature;
 @Override
 public void onEnable() {
     colonyFeature = new ColonyFeature();
-
-    // Adapte ces deux lignes à la vraie API de ton template:
     getEventManager().registerListener(colonyFeature.getListener());
-    getCommandManager().registerCommand("colonie", colonyFeature.getCommand());
+    getCommandManager().registerCommand(colonyFeature.getRootCommand(), colonyFeature.getCommand());
 }
 ```
 
-## Commandes
+## Utilisation en jeu
 
-- `/colonie info` : affiche l'état courant de la sélection.
-- `/colonie create` : valide la zone et lance la création (TODO à brancher).
-- `/colonie cancel` : annule la sélection active.
+1. Clic gauche sur bloc -> définit `posA` (chunk).
+2. Clic droit sur bloc -> définit `posB` (chunk).
+3. `/colonie info` -> affiche la zone.
+4. `/colonie create` -> lance la création (TODO métier à brancher).
+5. `/colonie cancel` -> annule la sélection.
 
-## Flux de fonctionnement
+## Next steps
 
-1. Clic gauche sur bloc => définit `posA` (chunk).
-2. Clic droit sur bloc => définit `posB` (chunk).
-3. `/colonie info` pour vérifier la zone.
-4. `/colonie create` pour créer la colonie.
-
-## Important
-
-La logique métier finale de création n'est pas encore branchée (`TODO` dans la commande), mais la structure est compatible pour être intégrée proprement à un template réel.
+- Personnaliser `settings.gradle.kts`, `build.gradle.kts` et `manifest.json`
+- Brancher la vraie logique de création de colonie dans `ColonieCommand#handleCreate`
+- Ajouter tes règles métier (claims, limites, permissions, persistance)

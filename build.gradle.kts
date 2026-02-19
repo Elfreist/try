@@ -1,3 +1,5 @@
+import org.gradle.jvm.toolchain.JvmVendorSpec
+
 plugins {
     java
 }
@@ -8,6 +10,7 @@ version = "0.1.0"
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
+        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
@@ -25,4 +28,5 @@ dependencies {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+    options.release.set(25)
 }
