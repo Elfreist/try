@@ -1,34 +1,17 @@
 # Base de mod Hytale: sélection de zone + commande `/colonie`
 
-Tu as partagé la bonne approche: on peut partir **sans template** en ajoutant les dépendances Hytale manuellement.
+Tu avais raison: pour le template `plugin-template`, il faut une intégration **simple** sans faux `MyModApi`.
 
-Ce repo inclut maintenant:
+Cette version fournit une feature prête à brancher:
 
-- un squelette de code (`selection`, `handlers`, `listener`, `commands`, `bootstrap`)
-- une base **Gradle Kotlin DSL** (`settings.gradle.kts`, `build.gradle.kts`)
-- une base **Maven** (`pom.xml`)
-- un `manifest.json` à personnaliser
-- un point d'entrée minimal `dev.myserver.Main`
+- `ColonyFeature` (assemblage de la feature)
+- `ListenerCentral` (events d'interaction)
+- `BlockClickHandler` (clic gauche/droit -> posA/posB en chunk)
+- `ColonieCommand` (sous-commandes `create`, `info`, `cancel`)
 
-## Dépendance Hytale (Gradle)
+## Intégration dans ton plugin-template
 
-Le `build.gradle.kts` contient:
-
-- `mavenCentral()`
-- repo Hytale `https://maven.hytale.com/release`
-- dépendance `implementation("com.hypixel.hytale:Server:+")`
-
-Tu peux remplacer `+` par une version fixe quand tu veux stabiliser ton build.
-
-## Dépendance Hytale (Maven)
-
-Le `pom.xml` contient le repo Hytale et une dépendance `Server` en scope `provided`.
-
-⚠️ Pense à remplacer `LATEST_VERSION_HERE` avant de build.
-
-## Intégration rapide
-
-Dans ton entrypoint réel (celui du template/projet):
+Dans ta classe principale du template, instancie la feature puis enregistre listener + commande avec les APIs du template:
 
 ```java
 private ColonyFeature colonyFeature;
@@ -36,21 +19,26 @@ private ColonyFeature colonyFeature;
 @Override
 public void onEnable() {
     colonyFeature = new ColonyFeature();
+
+    // Adapte ces deux lignes à la vraie API de ton template:
     getEventManager().registerListener(colonyFeature.getListener());
-    getCommandManager().registerCommand(colonyFeature.getRootCommand(), colonyFeature.getCommand());
+    getCommandManager().registerCommand("colonie", colonyFeature.getCommand());
 }
 ```
 
-## Utilisation en jeu
+## Commandes
 
-1. Clic gauche sur bloc -> définit `posA` (chunk).
-2. Clic droit sur bloc -> définit `posB` (chunk).
-3. `/colonie info` -> affiche la zone.
-4. `/colonie create` -> lance la création (TODO métier à brancher).
-5. `/colonie cancel` -> annule la sélection.
+- `/colonie info` : affiche l'état courant de la sélection.
+- `/colonie create` : valide la zone et lance la création (TODO à brancher).
+- `/colonie cancel` : annule la sélection active.
 
-## Next steps
+## Flux de fonctionnement
 
-- Personnaliser `settings.gradle.kts`, `build.gradle.kts` et `manifest.json`
-- Brancher la vraie logique de création de colonie dans `ColonieCommand#handleCreate`
-- Ajouter tes règles métier (claims, limites, permissions, persistance)
+1. Clic gauche sur bloc => définit `posA` (chunk).
+2. Clic droit sur bloc => définit `posB` (chunk).
+3. `/colonie info` pour vérifier la zone.
+4. `/colonie create` pour créer la colonie.
+
+## Important
+
+La logique métier finale de création n'est pas encore branchée (`TODO` dans la commande), mais la structure est compatible pour être intégrée proprement à un template réel.
