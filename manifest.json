@@ -1,0 +1,7 @@
+{
+  "name": "My Colony Mod",
+  "id": "dev.myserver.colonymod",
+  "version": "0.1.0",
+  "description": "Sélection de zone en chunks + commande /colonie",
+  "entry": "dev.myserver.Main"
+}
